@@ -240,10 +240,12 @@ public class CachedVideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
 
     void startListening(CachedVideoPlayerPlugin methodCallHandler, BinaryMessenger messenger) {
       VideoPlayerApi.setup(messenger, methodCallHandler);
+      MessagesHelper.VideoPlayerHelperApi.setup(messenger, new CachedVideoPlayerHelper(applicationContext));
     }
 
     void stopListening(BinaryMessenger messenger) {
       VideoPlayerApi.setup(messenger, null);
+      MessagesHelper.VideoPlayerHelperApi.setup(messenger, null);
     }
   }
 }
