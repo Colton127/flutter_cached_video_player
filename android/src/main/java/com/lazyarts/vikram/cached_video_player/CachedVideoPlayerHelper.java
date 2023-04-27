@@ -43,6 +43,7 @@ public class CachedVideoPlayerHelper implements MessagesHelper.VideoPlayerHelper
             .observeForever( new Observer<WorkInfo>() {
               @Override
               public void onChanged(WorkInfo workInfo) {
+                if(workInfo == null) return;
                 if (workInfo.getState().isFinished()) {
                   if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
                     result.success(true);
