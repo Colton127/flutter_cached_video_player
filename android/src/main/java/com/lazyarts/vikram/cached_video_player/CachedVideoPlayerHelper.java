@@ -18,42 +18,53 @@ import java.util.List;
 
 public class CachedVideoPlayerHelper implements MessagesHelper.VideoPlayerHelperApi {
 
-  private final Context applicationContext;
+    private final Context applicationContext;
+    private final CachedVideoPlayerPlugin methodCallHandler;
 
-  CachedVideoPlayerHelper(
-          Context applicationContext) {
-    this.applicationContext = applicationContext;
-  }
-  @Override
-  public void precacheVideos(@NonNull List<String> videos, MessagesHelper.Result<Boolean> result) {
-    scheduleWork(videos,result);
-  }
+    CachedVideoPlayerHelper(
+            Context applicationContext,
+            CachedVideoPlayerPlugin methodCallHandler
+    ) {
+        this.applicationContext = applicationContext;
+        this.methodCallHandler = methodCallHandler;
+    }
 
-  @Override
-  public void precacheVideo(@NonNull String videoUrl, MessagesHelper.Result<Boolean> result) {
-    List<String> list = Collections.singletonList(videoUrl);
-    scheduleWork(list,result);
-  }
+    @Override
+    public void precacheVideos(@NonNull List<String> videos, MessagesHelper.Result<Boolean> result) {
+        scheduleWork(videos, result);
+    }
 
-  private void scheduleWork(List<String> yourParameter, MessagesHelper.Result<Boolean> result) {
-    WorkManager workManager = WorkManager.getInstance(applicationContext);
-    OneTimeWorkRequest exampleWorkRequest = VideoPrecachingWorker.Companion.buildWorkRequest(yourParameter);
-    workManager.enqueueUniqueWork("upload_videos", ExistingWorkPolicy.KEEP, exampleWorkRequest);
-    workManager.getWorkInfoByIdLiveData(exampleWorkRequest.getId())
-            .observeForever( new Observer<WorkInfo>() {
-              @Override
-              public void onChanged(WorkInfo workInfo) {
-                if(workInfo == null) return;
-                if (workInfo.getState().isFinished()) {
-                  if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                    result.success(true);
-                  }
-                  else {
-                    result.success(false);
-                  }
-                }
-              }
-    });
-  }
+    @Override
+    public void precacheVideo(@NonNull String videoUrl, MessagesHelper.Result<Boolean> result) {
+        List<String> list = Collections.singletonList(videoUrl);
+        scheduleWork(list, result);
+    }
+
+    @Override
+    public void preparePlayerAfterError(@NonNull Long textureId) {
+        methodCallHandler.prepare(textureId);
+    }
+
+    ;
+
+    private void scheduleWork(List<String> yourParameter, MessagesHelper.Result<Boolean> result) {
+        WorkManager workManager = WorkManager.getInstance(applicationContext);
+        OneTimeWorkRequest exampleWorkRequest = VideoPrecachingWorker.Companion.buildWorkRequest(yourParameter);
+        workManager.enqueueUniqueWork("upload_videos", ExistingWorkPolicy.KEEP, exampleWorkRequest);
+        workManager.getWorkInfoByIdLiveData(exampleWorkRequest.getId())
+                .observeForever(new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(WorkInfo workInfo) {
+                        if (workInfo == null) return;
+                        if (workInfo.getState().isFinished()) {
+                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+                                result.success(true);
+                            } else {
+                                result.success(false);
+                            }
+                        }
+                    }
+                });
+    }
 
 }

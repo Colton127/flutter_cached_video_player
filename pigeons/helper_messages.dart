@@ -7,4 +7,6 @@ abstract class VideoPlayerHelperApi {
 
   @async
   bool precacheVideo(String videoUrl);
+
+  void preparePlayerAfterError(int textureId);
 }

@@ -323,12 +323,30 @@ class CachedVideoPlayerController
 
       switch (event.eventType) {
         case VideoEventType.initialized:
-          value = value.copyWith(
-            duration: event.duration,
-            size: event.size,
-            isInitialized: event.duration != null,
-          );
-          initializingCompleter.complete(null);
+          if(value.hasError){
+            value = CachedVideoPlayerValue(
+              duration: event.duration??value.duration,
+              size: event.size??value.size,
+              position: value.position,
+              caption: value.caption,
+              buffered: value.buffered,
+              isInitialized: event.duration != null,
+              isPlaying: true,
+              isLooping: value.isLooping,
+              isBuffering: value.isBuffering,
+              volume: value.volume,
+              playbackSpeed: value.playbackSpeed
+            );
+          }else{
+            value = value.copyWith(
+              duration: event.duration,
+              size: event.size,
+              isInitialized: event.duration != null,
+            );
+          }
+          if(!initializingCompleter.isCompleted){
+            initializingCompleter.complete(null);
+          }
           _applyLooping();
           _applyVolume();
           _applyPlayPause();

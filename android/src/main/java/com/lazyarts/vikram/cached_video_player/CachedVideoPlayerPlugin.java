@@ -205,6 +205,11 @@ public class CachedVideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
     player.pause();
   }
 
+  public void prepare(Long textureId) {
+    CachedVideoPlayer player = videoPlayers.get(textureId);
+    player.prepare();
+  }
+
   @Override
   public void setMixWithOthers(MixWithOthersMessage arg) {
     options.mixWithOthers = arg.getMixWithOthers();
@@ -240,7 +245,7 @@ public class CachedVideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
 
     void startListening(CachedVideoPlayerPlugin methodCallHandler, BinaryMessenger messenger) {
       VideoPlayerApi.setup(messenger, methodCallHandler);
-      MessagesHelper.VideoPlayerHelperApi.setup(messenger, new CachedVideoPlayerHelper(applicationContext));
+      MessagesHelper.VideoPlayerHelperApi.setup(messenger, new CachedVideoPlayerHelper(applicationContext,methodCallHandler));
     }
 
     void stopListening(BinaryMessenger messenger) {

@@ -35,6 +35,7 @@ public class MessagesHelper {
   public interface VideoPlayerHelperApi {
     void precacheVideos(@NonNull List<String> videos, Result<Boolean> result);
     void precacheVideo(@NonNull String videoUrl, Result<Boolean> result);
+    void preparePlayerAfterError(@NonNull Long textureId);
 
     /** The codec used by VideoPlayerHelperApi. */
     static MessageCodec<Object> getCodec() {
@@ -106,6 +107,30 @@ public class MessagesHelper {
               wrapped.put("error", wrapError(exception));
               reply.reply(wrapped);
             }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.VideoPlayerHelperApi.preparePlayerAfterError", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              Number textureIdArg = (Number)args.get(0);
+              if (textureIdArg == null) {
+                throw new NullPointerException("textureIdArg unexpectedly null.");
+              }
+              api.preparePlayerAfterError((textureIdArg == null) ? null : textureIdArg.longValue());
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
           });
         } else {
           channel.setMessageHandler(null);

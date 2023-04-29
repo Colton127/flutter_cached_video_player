@@ -10,6 +10,8 @@ import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
 import android.content.Context;
 import android.net.Uri;
 import android.view.Surface;
+import android.util.Log;
+
 
 import androidx.annotation.NonNull;
 
@@ -212,6 +214,7 @@ final class CachedVideoPlayer {
                     @Override
                     public void onPlayerError(@NonNull PlaybackException error) {
                         setBuffering(false);
+                        isInitialized = false;
                         if (eventSink != null) {
                             eventSink.error("VideoError", "Video player had error " + error, null);
                         }
@@ -264,6 +267,10 @@ final class CachedVideoPlayer {
 
     long getPosition() {
         return exoPlayer.getCurrentPosition();
+    }
+
+    void prepare() {
+        exoPlayer.prepare();
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
