@@ -7,6 +7,7 @@
 #import <GLKit/GLKit.h>
 #import "messages.h"
 #import <KTVHTTPCache/KTVHTTPCache.h>
+#import "MessagesHelper.h"
 
 #if !__has_feature(objc_arc)
 #error Code Requires ARC.
@@ -16,6 +17,49 @@ int64_t CachedCMTimeToMillis(CMTime time) {
   if (time.timescale == 0) return 0;
   return time.value * 1000 / time.timescale;
 }
+
+@interface CachedVideoPlayerHelper : NSObject <VideoPlayerHelperApi>
+@end
+
+@implementation CachedVideoPlayerHelper
+- (void)precacheVideosVideos:(NSArray<NSString *> *)videos completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
+  for (NSURL *url in videos) {
+      NSURL *videoURL = [NSURL URLWithString: url];
+      NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:videoURL];
+      NSRange range = NSMakeRange(0, 1000000);
+      NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:proxyURL];
+      [request setValue:[NSString stringWithFormat:@"bytes=%ld-%ld", (long)range.location, (long)NSMaxRange(range)-1] forHTTPHeaderField:@"Range"];
+      NSURLSessionDownloadTask *task = [[NSURLSession sharedSession] downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+        if (error != nil) {
+           NSLog(@"Error downloading video %@: %@", proxyURL.absoluteString, error.localizedDescription);
+           completion(@NO, nil);
+           return;
+        }
+        NSLog(@"Downloaded video %@ to: %@", proxyURL.absoluteString, location.path);
+      }];
+      [task resume];
+  }
+  completion(@YES, nil);
+}
+
+- (void)precacheVideoVideoUrl:(NSString *)videoUrl completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
+     NSURL *videoURL = [NSURL URLWithString: videoUrl];
+     NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:videoURL];
+     NSRange range = NSMakeRange(0, 1000000);
+     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:proxyURL];
+     [request setValue:[NSString stringWithFormat:@"bytes=%ld-%ld", (long)range.location, (long)NSMaxRange(range)-1] forHTTPHeaderField:@"Range"];
+     NSURLSessionDownloadTask *task = [[NSURLSession sharedSession] downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+         if (error != nil) {
+             NSLog(@"Error downloading video %@: %@", proxyURL.absoluteString, error.localizedDescription);
+             completion(@NO, nil);
+             return;
+         }
+         NSLog(@"Downloaded video %@ to: %@", proxyURL.absoluteString, location.path);
+     }];
+     [task resume];
+     completion(@YES, nil);
+}
+@end
 
 @interface CachedFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
@@ -467,6 +511,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   CachedVideoPlayerPlugin* instance = [[CachedVideoPlayerPlugin alloc] initWithRegistrar:registrar];
   [registrar publish:instance];
   CachedVideoPlayerApiSetup(registrar.messenger, instance);
+  CachedVideoPlayerHelper *cachedVideoPlayerHelper = [[CachedVideoPlayerHelper alloc] init];
+  VideoPlayerHelperApiSetup(registrar.messenger, cachedVideoPlayerHelper);
 }
 
 - (instancetype)initWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
