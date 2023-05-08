@@ -22,11 +22,11 @@ int64_t CachedCMTimeToMillis(CMTime time) {
 @end
 
 @implementation CachedVideoPlayerHelper
-- (void)precacheVideosVideos:(NSArray<NSString *> *)videos completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
-  for (NSURL *url in videos) {
-      NSURL *videoURL = [NSURL URLWithString: url];
+- (void)precacheVideosVideos:(NSArray<VideoItem *> *)videos completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
+  for (VideoItem *item in videos) {
+      NSURL *videoURL = [NSURL URLWithString: item.videoUrl];
       NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:videoURL];
-      NSRange range = NSMakeRange(0, 1000000);
+      NSRange range = NSMakeRange(0, [item.size intValue]/100*25);
       NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:proxyURL];
       [request setValue:[NSString stringWithFormat:@"bytes=%ld-%ld", (long)range.location, (long)NSMaxRange(range)-1] forHTTPHeaderField:@"Range"];
       NSURLSessionDownloadTask *task = [[NSURLSession sharedSession] downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
@@ -42,10 +42,10 @@ int64_t CachedCMTimeToMillis(CMTime time) {
   completion(@YES, nil);
 }
 
-- (void)precacheVideoVideoUrl:(NSString *)videoUrl completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
-     NSURL *videoURL = [NSURL URLWithString: videoUrl];
+- (void)precacheVideoVideo:(VideoItem *)video completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
+     NSURL *videoURL = [NSURL URLWithString: video.videoUrl];
      NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:videoURL];
-     NSRange range = NSMakeRange(0, 1000000);
+     NSRange range = NSMakeRange(0, [video.size intValue]/100*25);
      NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:proxyURL];
      [request setValue:[NSString stringWithFormat:@"bytes=%ld-%ld", (long)range.location, (long)NSMaxRange(range)-1] forHTTPHeaderField:@"Range"];
      NSURLSessionDownloadTask *task = [[NSURLSession sharedSession] downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
@@ -58,6 +58,9 @@ int64_t CachedCMTimeToMillis(CMTime time) {
      }];
      [task resume];
      completion(@YES, nil);
+}
+- (void)preparePlayerAfterErrorTextureId:(NSNumber *)textureId error:(FlutterError *_Nullable *_Nonnull)error{
+
 }
 @end
 
