@@ -1,5 +1,6 @@
 import 'package:cached_video_player/src/video_player_helper_api.dart';
 
+
 class CachedVideoPlayerHelper {
   CachedVideoPlayerHelper._privateConstructor();
 
@@ -10,12 +11,12 @@ class CachedVideoPlayerHelper {
 
   VideoPlayerHelperApi _api = VideoPlayerHelperApi();
 
-  Future<bool> precacheVideo(String videoUrl) {
-    return _api.precacheVideo(videoUrl);
+  Future<bool> precacheVideo(VideoItem video) {
+    return _api.precacheVideo(video);
   }
 
-  Future<bool> precacheVideos(List<String> videoUrlList) {
-    return _api.precacheVideos(videoUrlList);
+  Future<bool> precacheVideos(List<VideoItem> videoList) {
+    return _api.precacheVideos(videoList);
   }
 
   void preparePlayerAfterError(int textureId) {

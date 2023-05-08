@@ -30,13 +30,13 @@ public class CachedVideoPlayerHelper implements MessagesHelper.VideoPlayerHelper
     }
 
     @Override
-    public void precacheVideos(@NonNull List<String> videos, MessagesHelper.Result<Boolean> result) {
+    public void precacheVideos(@NonNull List<MessagesHelper.VideoItem> videos, MessagesHelper.Result<Boolean> result) {
         scheduleWork(videos, result);
     }
 
     @Override
-    public void precacheVideo(@NonNull String videoUrl, MessagesHelper.Result<Boolean> result) {
-        List<String> list = Collections.singletonList(videoUrl);
+    public void precacheVideo(@NonNull MessagesHelper.VideoItem video, MessagesHelper.Result<Boolean> result) {
+        List<MessagesHelper.VideoItem> list = Collections.singletonList(video);
         scheduleWork(list, result);
     }
 
@@ -47,7 +47,7 @@ public class CachedVideoPlayerHelper implements MessagesHelper.VideoPlayerHelper
 
     ;
 
-    private void scheduleWork(List<String> yourParameter, MessagesHelper.Result<Boolean> result) {
+    private void scheduleWork(List<MessagesHelper.VideoItem> yourParameter, MessagesHelper.Result<Boolean> result) {
         WorkManager workManager = WorkManager.getInstance(applicationContext);
         OneTimeWorkRequest exampleWorkRequest = VideoPrecachingWorker.Companion.buildWorkRequest(yourParameter);
         workManager.enqueueUniqueWork("upload_videos", ExistingWorkPolicy.KEEP, exampleWorkRequest);

@@ -8,13 +8,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class VideoItem;
+
+@interface VideoItem : NSObject
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)makeWithVideoUrl:(NSString *)videoUrl
+    size:(NSNumber *)size;
+@property(nonatomic, copy) NSString * videoUrl;
+@property(nonatomic, strong) NSNumber * size;
+@end
 
 /// The codec used by VideoPlayerHelperApi.
 NSObject<FlutterMessageCodec> *VideoPlayerHelperApiGetCodec(void);
 
 @protocol VideoPlayerHelperApi
-- (void)precacheVideosVideos:(NSArray<NSString *> *)videos completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
-- (void)precacheVideoVideoUrl:(NSString *)videoUrl completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+- (void)precacheVideosVideos:(NSArray<VideoItem *> *)videos completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+- (void)precacheVideoVideo:(VideoItem *)video completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+- (void)preparePlayerAfterErrorTextureId:(NSNumber *)textureId error:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void VideoPlayerHelperApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<VideoPlayerHelperApi> *_Nullable api);

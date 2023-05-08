@@ -31,15 +31,66 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
 }
 
 
+@interface VideoItem ()
++ (VideoItem *)fromMap:(NSDictionary *)dict;
++ (nullable VideoItem *)nullableFromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
+
+@implementation VideoItem
++ (instancetype)makeWithVideoUrl:(NSString *)videoUrl
+    size:(NSNumber *)size {
+  VideoItem* pigeonResult = [[VideoItem alloc] init];
+  pigeonResult.videoUrl = videoUrl;
+  pigeonResult.size = size;
+  return pigeonResult;
+}
++ (VideoItem *)fromMap:(NSDictionary *)dict {
+  VideoItem *pigeonResult = [[VideoItem alloc] init];
+  pigeonResult.videoUrl = GetNullableObject(dict, @"videoUrl");
+  NSAssert(pigeonResult.videoUrl != nil, @"");
+  pigeonResult.size = GetNullableObject(dict, @"size");
+  NSAssert(pigeonResult.size != nil, @"");
+  return pigeonResult;
+}
++ (nullable VideoItem *)nullableFromMap:(NSDictionary *)dict { return (dict) ? [VideoItem fromMap:dict] : nil; }
+- (NSDictionary *)toMap {
+  return @{
+    @"videoUrl" : (self.videoUrl ?: [NSNull null]),
+    @"size" : (self.size ?: [NSNull null]),
+  };
+}
+@end
 
 @interface VideoPlayerHelperApiCodecReader : FlutterStandardReader
 @end
 @implementation VideoPlayerHelperApiCodecReader
+- (nullable id)readValueOfType:(UInt8)type 
+{
+  switch (type) {
+    case 128:     
+      return [VideoItem fromMap:[self readValue]];
+    
+    default:    
+      return [super readValueOfType:type];
+    
+  }
+}
 @end
 
 @interface VideoPlayerHelperApiCodecWriter : FlutterStandardWriter
 @end
 @implementation VideoPlayerHelperApiCodecWriter
+- (void)writeValue:(id)value 
+{
+  if ([value isKindOfClass:[VideoItem class]]) {
+    [self writeByte:128];
+    [self writeValue:[value toMap]];
+  } else 
+{
+    [super writeValue:value];
+  }
+}
 @end
 
 @interface VideoPlayerHelperApiCodecReaderWriter : FlutterStandardReaderWriter
@@ -75,7 +126,7 @@ void VideoPlayerHelperApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
       NSCAssert([api respondsToSelector:@selector(precacheVideosVideos:completion:)], @"VideoPlayerHelperApi api (%@) doesn't respond to @selector(precacheVideosVideos:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSArray<NSString *> *arg_videos = GetNullableObjectAtIndex(args, 0);
+        NSArray<VideoItem *> *arg_videos = GetNullableObjectAtIndex(args, 0);
         [api precacheVideosVideos:arg_videos completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
@@ -92,13 +143,33 @@ void VideoPlayerHelperApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
         binaryMessenger:binaryMessenger
         codec:VideoPlayerHelperApiGetCodec()        ];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(precacheVideoVideoUrl:completion:)], @"VideoPlayerHelperApi api (%@) doesn't respond to @selector(precacheVideoVideoUrl:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(precacheVideoVideo:completion:)], @"VideoPlayerHelperApi api (%@) doesn't respond to @selector(precacheVideoVideo:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSString *arg_videoUrl = GetNullableObjectAtIndex(args, 0);
-        [api precacheVideoVideoUrl:arg_videoUrl completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+        VideoItem *arg_video = GetNullableObjectAtIndex(args, 0);
+        [api precacheVideoVideo:arg_video completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.VideoPlayerHelperApi.preparePlayerAfterError"
+        binaryMessenger:binaryMessenger
+        codec:VideoPlayerHelperApiGetCodec()        ];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(preparePlayerAfterErrorTextureId:error:)], @"VideoPlayerHelperApi api (%@) doesn't respond to @selector(preparePlayerAfterErrorTextureId:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_textureId = GetNullableObjectAtIndex(args, 0);
+        FlutterError *error;
+        [api preparePlayerAfterErrorTextureId:arg_textureId error:&error];
+        callback(wrapResult(nil, error));
       }];
     }
     else {

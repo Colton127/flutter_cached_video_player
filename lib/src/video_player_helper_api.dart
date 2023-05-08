@@ -7,8 +7,54 @@ import 'dart:typed_data' show Uint8List, Int32List, Int64List, Float64List;
 import 'package:flutter/foundation.dart' show WriteBuffer, ReadBuffer;
 import 'package:flutter/services.dart';
 
+class VideoItem {
+  VideoItem({
+    required this.videoUrl,
+    required this.size,
+  });
+
+  String videoUrl;
+  int size;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['videoUrl'] = videoUrl;
+    pigeonMap['size'] = size;
+    return pigeonMap;
+  }
+
+  static VideoItem decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return VideoItem(
+      videoUrl: pigeonMap['videoUrl']! as String,
+      size: pigeonMap['size']! as int,
+    );
+  }
+}
+
 class _VideoPlayerHelperApiCodec extends StandardMessageCodec {
   const _VideoPlayerHelperApiCodec();
+  @override
+  void writeValue(WriteBuffer buffer, Object? value) {
+    if (value is VideoItem) {
+      buffer.putUint8(128);
+      writeValue(buffer, value.encode());
+    } else 
+{
+      super.writeValue(buffer, value);
+    }
+  }
+  @override
+  Object? readValueOfType(int type, ReadBuffer buffer) {
+    switch (type) {
+      case 128:       
+        return VideoItem.decode(readValue(buffer)!);
+      
+      default:      
+        return super.readValueOfType(type, buffer);
+      
+    }
+  }
 }
 
 class VideoPlayerHelperApi {
@@ -21,7 +67,7 @@ class VideoPlayerHelperApi {
 
   static const MessageCodec<Object?> codec = _VideoPlayerHelperApiCodec();
 
-  Future<bool> precacheVideos(List<String?> arg_videos) async {
+  Future<bool> precacheVideos(List<VideoItem?> arg_videos) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.VideoPlayerHelperApi.precacheVideos', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
@@ -48,11 +94,11 @@ class VideoPlayerHelperApi {
     }
   }
 
-  Future<bool> precacheVideo(String arg_videoUrl) async {
+  Future<bool> precacheVideo(VideoItem arg_video) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.VideoPlayerHelperApi.precacheVideo', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_videoUrl]) as Map<Object?, Object?>?;
+        await channel.send(<Object?>[arg_video]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

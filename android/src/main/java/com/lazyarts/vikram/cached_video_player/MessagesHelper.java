@@ -22,6 +22,62 @@ import java.util.HashMap;
 @SuppressWarnings({"unused", "unchecked", "CodeBlock2Expr", "RedundantSuppression"})
 public class MessagesHelper {
 
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class VideoItem {
+    private @NonNull String videoUrl;
+    public @NonNull String getVideoUrl() { return videoUrl; }
+    public void setVideoUrl(@NonNull String setterArg) {
+      if (setterArg == null) {
+        throw new IllegalStateException("Nonnull field \"videoUrl\" is null.");
+      }
+      this.videoUrl = setterArg;
+    }
+
+    private @NonNull Long size;
+    public @NonNull Long getSize() { return size; }
+    public void setSize(@NonNull Long setterArg) {
+      if (setterArg == null) {
+        throw new IllegalStateException("Nonnull field \"size\" is null.");
+      }
+      this.size = setterArg;
+    }
+
+    /** Constructor is private to enforce null safety; use Builder. */
+    private VideoItem() {}
+    public static final class Builder {
+      private @Nullable String videoUrl;
+      public @NonNull Builder setVideoUrl(@NonNull String setterArg) {
+        this.videoUrl = setterArg;
+        return this;
+      }
+      private @Nullable Long size;
+      public @NonNull Builder setSize(@NonNull Long setterArg) {
+        this.size = setterArg;
+        return this;
+      }
+      public @NonNull VideoItem build() {
+        VideoItem pigeonReturn = new VideoItem();
+        pigeonReturn.setVideoUrl(videoUrl);
+        pigeonReturn.setSize(size);
+        return pigeonReturn;
+      }
+    }
+    @NonNull Map<String, Object> toMap() {
+      Map<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("videoUrl", videoUrl);
+      toMapResult.put("size", size);
+      return toMapResult;
+    }
+    static @NonNull VideoItem fromMap(@NonNull Map<String, Object> map) {
+      VideoItem pigeonResult = new VideoItem();
+      Object videoUrl = map.get("videoUrl");
+      pigeonResult.setVideoUrl((String)videoUrl);
+      Object size = map.get("size");
+      pigeonResult.setSize((size == null) ? null : ((size instanceof Integer) ? (Integer)size : (Long)size));
+      return pigeonResult;
+    }
+  }
+
   public interface Result<T> {
     void success(T result);
     void error(Throwable error);
@@ -29,12 +85,33 @@ public class MessagesHelper {
   private static class VideoPlayerHelperApiCodec extends StandardMessageCodec {
     public static final VideoPlayerHelperApiCodec INSTANCE = new VideoPlayerHelperApiCodec();
     private VideoPlayerHelperApiCodec() {}
+    @Override
+    protected Object readValueOfType(byte type, ByteBuffer buffer) {
+      switch (type) {
+        case (byte)128:         
+          return VideoItem.fromMap((Map<String, Object>) readValue(buffer));
+        
+        default:        
+          return super.readValueOfType(type, buffer);
+        
+      }
+    }
+    @Override
+    protected void writeValue(ByteArrayOutputStream stream, Object value)     {
+      if (value instanceof VideoItem) {
+        stream.write(128);
+        writeValue(stream, ((VideoItem) value).toMap());
+      } else 
+{
+        super.writeValue(stream, value);
+      }
+    }
   }
 
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
   public interface VideoPlayerHelperApi {
-    void precacheVideos(@NonNull List<String> videos, Result<Boolean> result);
-    void precacheVideo(@NonNull String videoUrl, Result<Boolean> result);
+    void precacheVideos(@NonNull List<VideoItem> videos, Result<Boolean> result);
+    void precacheVideo(@NonNull VideoItem video, Result<Boolean> result);
     void preparePlayerAfterError(@NonNull Long textureId);
 
     /** The codec used by VideoPlayerHelperApi. */
@@ -52,7 +129,7 @@ public class MessagesHelper {
             Map<String, Object> wrapped = new HashMap<>();
             try {
               ArrayList<Object> args = (ArrayList<Object>)message;
-              List<String> videosArg = (List<String>)args.get(0);
+              List<VideoItem> videosArg = (List<VideoItem>)args.get(0);
               if (videosArg == null) {
                 throw new NullPointerException("videosArg unexpectedly null.");
               }
@@ -86,9 +163,9 @@ public class MessagesHelper {
             Map<String, Object> wrapped = new HashMap<>();
             try {
               ArrayList<Object> args = (ArrayList<Object>)message;
-              String videoUrlArg = (String)args.get(0);
-              if (videoUrlArg == null) {
-                throw new NullPointerException("videoUrlArg unexpectedly null.");
+              VideoItem videoArg = (VideoItem)args.get(0);
+              if (videoArg == null) {
+                throw new NullPointerException("videoArg unexpectedly null.");
               }
               Result<Boolean> resultCallback = new Result<Boolean>() {
                 public void success(Boolean result) {
@@ -101,7 +178,7 @@ public class MessagesHelper {
                 }
               };
 
-              api.precacheVideo(videoUrlArg, resultCallback);
+              api.precacheVideo(videoArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));
