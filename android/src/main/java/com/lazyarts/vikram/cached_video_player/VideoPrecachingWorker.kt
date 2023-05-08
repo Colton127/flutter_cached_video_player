@@ -5,10 +5,8 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.work.*
-import com.google.android.exoplayer2.database.StandaloneDatabaseProvider
 import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.upstream.cache.*
-import kotlinx.coroutines.Job
 
 class VideoPrecachingWorker(context: Context, workerParameters: WorkerParameters) : Worker(context, workerParameters){
     private val TAG = "VideoPrecachingWorker"
@@ -52,7 +50,7 @@ class VideoPrecachingWorker(context: Context, workerParameters: WorkerParameters
         }
         if (!videoUrl.isNullOrBlank()) {
             val videoUri = Uri.parse(videoUrl)
-            val dataSpec = DataSpec(videoUri, 0, 1024 * 1024)
+            val dataSpec = DataSpec(videoUri, 0, 1024 * 1024*4)
 
             val progressListener =
                 CacheWriter.ProgressListener { requestLength, bytesCached, newBytesCached ->
