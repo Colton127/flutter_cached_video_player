@@ -45,7 +45,7 @@ int64_t CachedCMTimeToMillis(CMTime time) {
 - (void)precacheVideoVideo:(VideoItem *)video completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
      NSURL *videoURL = [NSURL URLWithString: video.videoUrl];
      NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:videoURL];
-     NSRange range = NSMakeRange(0, [video.size intValue]/100*25);
+     NSRange range = NSMakeRange(0, [video.size intValue]/100*30);
      NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:proxyURL];
      [request setValue:[NSString stringWithFormat:@"bytes=%ld-%ld", (long)range.location, (long)NSMaxRange(range)-1] forHTTPHeaderField:@"Range"];
      NSURLSessionDownloadTask *task = [[NSURLSession sharedSession] downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {

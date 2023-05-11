@@ -76,7 +76,7 @@ class VideoPrecachingWorker(context: Context, workerParameters: WorkerParameters
         }
         if (!videoUrl.isNullOrBlank()) {
             val videoUri = Uri.parse(videoUrl)
-            val dataSpec = DataSpec(videoUri, 0, videoSize / 100 * 25)
+            val dataSpec = DataSpec(videoUri, 0, videoSize / 100 * 30)
 //            val dataSpec = DataSpec(videoUri, 0, 1024 * 1024*4)
 
             val progressListener =
