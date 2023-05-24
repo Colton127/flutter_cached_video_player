@@ -18,8 +18,8 @@ export 'src/cached_video_player_helper.dart';
 export 'src/video_player_helper_api.dart' show VideoItem;
 
 final VideoPlayerPlatform _videoPlayerPlatform = VideoPlayerPlatform.instance
-  // This will clear all open videos on the platform when a full restart is
-  // performed.
+// This will clear all open videos on the platform when a full restart is
+// performed.
   ..init();
 
 /// The duration, current position, buffering state, error state and settings
@@ -270,6 +270,8 @@ class CachedVideoPlayerController
   @visibleForTesting
   int get textureId => _textureId;
 
+  bool get isDisposed => _isDisposed;
+
   /// Attempts to open the given [dataSource] and load metadata about the video.
   Future<void> initialize() async {
     _lifeCycleObserver = _CachedVideoAppLifeCycleObserver(this);
@@ -324,28 +326,27 @@ class CachedVideoPlayerController
 
       switch (event.eventType) {
         case VideoEventType.initialized:
-          if(value.hasError){
+          if (value.hasError) {
             value = CachedVideoPlayerValue(
-              duration: event.duration??value.duration,
-              size: event.size??value.size,
-              position: value.position,
-              caption: value.caption,
-              buffered: value.buffered,
-              isInitialized: event.duration != null,
-              isPlaying: true,
-              isLooping: value.isLooping,
-              isBuffering: value.isBuffering,
-              volume: value.volume,
-              playbackSpeed: value.playbackSpeed
-            );
-          }else{
+                duration: event.duration ?? value.duration,
+                size: event.size ?? value.size,
+                position: value.position,
+                caption: value.caption,
+                buffered: value.buffered,
+                isInitialized: event.duration != null,
+                isPlaying: true,
+                isLooping: value.isLooping,
+                isBuffering: value.isBuffering,
+                volume: value.volume,
+                playbackSpeed: value.playbackSpeed);
+          } else {
             value = value.copyWith(
               duration: event.duration,
               size: event.size,
               isInitialized: event.duration != null,
             );
           }
-          if(!initializingCompleter.isCompleted){
+          if (!initializingCompleter.isCompleted) {
             initializingCompleter.complete(null);
           }
           _applyLooping();
